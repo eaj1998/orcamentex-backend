@@ -78,6 +78,8 @@ exports.orderDetail = [
  */
 exports.orderCreate = [
 	auth,
+    body("title", "Title must not be empty.").isLength({ min: 1 }).trim(),
+	sanitizeBody("**").escape(),
 	(req, res) => {
 		try {
 			const errors = validationResult(req);
@@ -90,7 +92,7 @@ exports.orderCreate = [
 				//Save order.
 				order.save(function (err) {
 					if (err) { return apiResponse.ErrorResponse(res, err); }
-					return apiResponse.successResponseWithData(res,"Order add Success.", req.body);
+					return apiResponse.successResponseWithData(res,"Order add Success.", order);
 				});
 			}
 		} catch (err) {
@@ -111,7 +113,7 @@ exports.orderCreate = [
  */
 exports.orderUpdate = [
 	auth,
-    body("title", "Name must not be empty.").isLength({ min: 1 }).trim(),
+	sanitizeBody("**").escape(),
 	(req, res) => {
 		try {
 			const errors = validationResult(req);	
@@ -132,7 +134,7 @@ exports.orderUpdate = [
                                     return apiResponse.ErrorResponse(res, err); 
                                 }else{
                                     let orderData = new OrderData(req.body);
-                                    return apiResponse.successResponseWithData(res,"Order update Success.", orderData);
+                                    return apiResponse.successResponseWithData(res,"Order update Success.", Order);
                                 }
                             });							
 						}
