@@ -92,7 +92,7 @@ exports.orderCreate = [
 				//Save order.
 				order.save(function (err) {
 					if (err) { return apiResponse.ErrorResponse(res, err); }
-					return apiResponse.successResponseWithData(res,"Order add Success.", order);
+					return apiResponse.successResponseWithData(res,"Order add Success. Test", order);
 				});
 			}
 		} catch (err) {
