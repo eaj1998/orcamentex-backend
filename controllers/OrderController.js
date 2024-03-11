@@ -11,7 +11,7 @@ function OrderData(data) {
 	this.id = data._id;
 	this.title= data.title;
 	this.customer = data.customer;
-	this.productOrder = data.productOrder;
+	this.products = data.products;
 	this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
 }
@@ -78,20 +78,10 @@ exports.orderDetail = [
  */
 exports.orderCreate = [
 	auth,
-	sanitizeBody("*").escape(),
 	(req, res) => {
 		try {
 			const errors = validationResult(req);
-			var order = new Order(
-				{ 	
-					title: req.body.title,
-					customer: req.body.customer,
-					products: req.body.products
-				});
-
-			console.log('req', req.body.products);
-			console.log('ORDER', order);
-			console.log('erros',errors);
+			var order = new Order(req.body);
 
 			if (!errors.isEmpty()) {
 				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
@@ -100,8 +90,7 @@ exports.orderCreate = [
 				//Save order.
 				order.save(function (err) {
 					if (err) { return apiResponse.ErrorResponse(res, err); }
-					let orderData = new OrderData(order);
-					return apiResponse.successResponseWithData(res,"Order add Success.", orderData);
+					return apiResponse.successResponseWithData(res,"Order add Success.", req.body);
 				});
 			}
 		} catch (err) {
@@ -114,7 +103,7 @@ exports.orderCreate = [
 /**
  * Order update.
  * 
- * @param {string}      name 
+ * @param {string}      title 
  * @param {string}      email
  * @param {string}      phone
  * 
@@ -122,16 +111,10 @@ exports.orderCreate = [
  */
 exports.orderUpdate = [
 	auth,
-    body("name", "Name must not be empty.").isLength({ min: 1 }).trim(),
-	sanitizeBody("*").escape(),
+    body("title", "Name must not be empty.").isLength({ min: 1 }).trim(),
 	(req, res) => {
 		try {
-			const errors = validationResult(req);
-			var order = new Order(
-				{ name: req.body.name,
-					valor: req.body.valor,
-				});
-
+			const errors = validationResult(req);	
 			if (!errors.isEmpty()) {
 				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
 			}
@@ -140,16 +123,15 @@ exports.orderUpdate = [
 					return apiResponse.validationErrorWithData(res, "Invalid Error.", "Invalid ID");
 				}else{
 					Order.findById(req.params.id, function (err, foundOrder) {
-                        console.log('foundOrder', foundOrder);
 						if(foundOrder === null){
 							return apiResponse.notFoundResponse(res,"Order not exists with this id");
 						}else{						
                             //update order.
-                            Order.findByIdAndUpdate(req.params.id, order, {},function (err) {
+                            Order.findByIdAndUpdate(req.params.id, req.body, {},function (err) {
                                 if (err) { 
                                     return apiResponse.ErrorResponse(res, err); 
                                 }else{
-                                    let orderData = new OrderData(order);
+                                    let orderData = new OrderData(req.body);
                                     return apiResponse.successResponseWithData(res,"Order update Success.", orderData);
                                 }
                             });							
