@@ -82,12 +82,7 @@ exports.customerCreate = [
 	sanitizeBody("*").escape(),
 	(req, res) => {
 		try {
-			const errors = validationResult(req);
-			var customer = new Customer(
-				{ name: req.body.name,
-					phone: req.body.phone,
-					email: req.body.email
-				});
+			const errors = validationResult(req);	
 
 			if (!errors.isEmpty()) {
 				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
@@ -96,7 +91,7 @@ exports.customerCreate = [
 				//Save customer.
 				customer.save(function (err) {
 					if (err) { return apiResponse.ErrorResponse(res, err); }
-					let customerData = new CustomerData(customer);
+					let customerData = new CustomerData(req.body);
 					return apiResponse.successResponseWithData(res,"Customer add Success.", customerData);
 				});
 			}
@@ -122,13 +117,7 @@ exports.customerUpdate = [
 	sanitizeBody("*").escape(),
 	(req, res) => {
 		try {
-			const errors = validationResult(req);
-			var customer = new Customer(
-				{ name: req.body.name,
-					phone: req.body.phone,
-					email: req.body.email
-				});
-
+			const errors = validationResult(req);	
 			if (!errors.isEmpty()) {
 				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
 			}
@@ -142,11 +131,11 @@ exports.customerUpdate = [
 							return apiResponse.notFoundResponse(res,"Customer not exists with this id");
 						}else{						
                             //update customer.
-                            Customer.findByIdAndUpdate(foundCustomer._id, customer, {},function (err) {
+                            Customer.findByIdAndUpdate(req.params.id, req.body, {},function (err) {
                                 if (err) { 
                                     return apiResponse.ErrorResponse(res, err); 
                                 }else{
-                                    let customerData = new CustomerData(customer);
+                                    let customerData = new CustomerData(req.body);
                                     return apiResponse.successResponseWithData(res,"Customer update Success.", customerData);
                                 }
                             });							

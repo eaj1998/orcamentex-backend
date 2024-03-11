@@ -10,6 +10,8 @@ mongoose.set("useFindAndModify", false);
 function OrderData(data) {
 	this.id = data._id;
 	this.title= data.title;
+	this.customer = data.customer;
+	this.productOrder = data.productOrder;
 	this.createdAt = data.createdAt;
     this.updatedAt = data.updatedAt;
 }
@@ -19,13 +21,13 @@ function OrderData(data) {
  * 
  * @returns {Object}
  */
-exports.productList = [
+exports.orderList = [
 	auth,
 	function (req, res) {
 		try {
-			Order.find().then((products)=>{
-				if(products.length > 0){
-					return apiResponse.successResponseWithData(res, "Operation success", products);
+			Order.find().populate('customer').then((orders)=>{
+				if(orders.length > 0){
+					return apiResponse.successResponseWithData(res, "Operation success", orders);
 				}else{
 					return apiResponse.successResponseWithData(res, "Operation success", []);
 				}
@@ -44,17 +46,17 @@ exports.productList = [
  * 
  * @returns {Object}
  */
-exports.productDetail = [
+exports.orderDetail = [
 	auth,
 	function (req, res) {
 		if(!mongoose.Types.ObjectId.isValid(req.params.id)){
 			return apiResponse.successResponseWithData(res, "Operation success", {});
 		}
 		try {
-			Order.findOne({_id: req.params.id}).then((product)=>{                
-				if(product !== null){
-					let productData = new OrderData(product);
-					return apiResponse.successResponseWithData(res, "Operation success", productData);
+			Order.findOne({_id: req.params.id}).then((order)=>{                
+				if(order !== null){
+					let orderData = new OrderData(order);
+					return apiResponse.successResponseWithData(res, "Operation success", orderData);
 				}else{
 					return apiResponse.successResponseWithData(res, "Operation success", {});
 				}
@@ -74,28 +76,32 @@ exports.productDetail = [
  * 
  * @returns {Object}
  */
-exports.productCreate = [
+exports.orderCreate = [
 	auth,
-	body("name", "Name must not be empty.").isLength({ min: 1 }).trim(),
-	body("valor", "Valor must not be empty.").isLength({ min: 1 }).trim(),
 	sanitizeBody("*").escape(),
 	(req, res) => {
 		try {
 			const errors = validationResult(req);
-			var product = new Order(
-				{ name: req.body.name,
-					valor: req.body.valor,
+			var order = new Order(
+				{ 	
+					title: req.body.title,
+					customer: req.body.customer,
+					products: req.body.products
 				});
+
+			console.log('req', req.body.products);
+			console.log('ORDER', order);
+			console.log('erros',errors);
 
 			if (!errors.isEmpty()) {
 				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
 			}
 			else {
-				//Save product.
-				product.save(function (err) {
+				//Save order.
+				order.save(function (err) {
 					if (err) { return apiResponse.ErrorResponse(res, err); }
-					let productData = new OrderData(product);
-					return apiResponse.successResponseWithData(res,"Order add Success.", productData);
+					let orderData = new OrderData(order);
+					return apiResponse.successResponseWithData(res,"Order add Success.", orderData);
 				});
 			}
 		} catch (err) {
@@ -114,14 +120,14 @@ exports.productCreate = [
  * 
  * @returns {Object}
  */
-exports.productUpdate = [
+exports.orderUpdate = [
 	auth,
     body("name", "Name must not be empty.").isLength({ min: 1 }).trim(),
 	sanitizeBody("*").escape(),
 	(req, res) => {
 		try {
 			const errors = validationResult(req);
-			var product = new Order(
+			var order = new Order(
 				{ name: req.body.name,
 					valor: req.body.valor,
 				});
@@ -138,13 +144,13 @@ exports.productUpdate = [
 						if(foundOrder === null){
 							return apiResponse.notFoundResponse(res,"Order not exists with this id");
 						}else{						
-                            //update product.
-                            Order.findByIdAndUpdate(req.params.id, product, {},function (err) {
+                            //update order.
+                            Order.findByIdAndUpdate(req.params.id, order, {},function (err) {
                                 if (err) { 
                                     return apiResponse.ErrorResponse(res, err); 
                                 }else{
-                                    let productData = new OrderData(product);
-                                    return apiResponse.successResponseWithData(res,"Order update Success.", productData);
+                                    let orderData = new OrderData(order);
+                                    return apiResponse.successResponseWithData(res,"Order update Success.", orderData);
                                 }
                             });							
 						}
@@ -165,7 +171,7 @@ exports.productUpdate = [
  * 
  * @returns {Object}
  */
-exports.productDelete = [
+exports.orderDelete = [
 	auth,
 	function (req, res) {
 		if(!mongoose.Types.ObjectId.isValid(req.params.id)){

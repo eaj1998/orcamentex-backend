@@ -121,12 +121,7 @@ exports.productUpdate = [
 	sanitizeBody("*").escape(),
 	(req, res) => {
 		try {
-			const errors = validationResult(req);
-			var product = new Product(
-				{ name: req.body.name,
-					valor: req.body.valor,
-				});
-
+			const errors = validationResult(req);	
 			if (!errors.isEmpty()) {
 				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
 			}
@@ -140,11 +135,11 @@ exports.productUpdate = [
 							return apiResponse.notFoundResponse(res,"Product not exists with this id");
 						}else{						
                             //update product.
-                            Product.findByIdAndUpdate(req.params.id, product, {},function (err) {
+                            Product.findByIdAndUpdate(req.params.id, req.body, {},function (err) {
                                 if (err) { 
                                     return apiResponse.ErrorResponse(res, err); 
                                 }else{
-                                    let productData = new ProductData(product);
+                                    let productData = new ProductData(req.body);
                                     return apiResponse.successResponseWithData(res,"Product update Success.", productData);
                                 }
                             });							
