@@ -83,7 +83,11 @@ exports.customerCreate = [
 	(req, res) => {
 		try {
 			const errors = validationResult(req);	
-
+			var customer = new Customer(
+				{ name: req.body.name,
+					phone: req.body.phone,
+					eamil: req.body.email,
+				});
 			if (!errors.isEmpty()) {
 				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
 			}
@@ -97,6 +101,7 @@ exports.customerCreate = [
 			}
 		} catch (err) {
 			//throw error in json response with status 500. 
+			console.log(err);
 			return apiResponse.ErrorResponse(res, err);
 		}
 	}

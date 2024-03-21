@@ -1,4 +1,5 @@
 const Product = require("../models/ProductModel");
+const Counter = require("../models/CounterModel");
 const { body,validationResult } = require("express-validator");
 const { sanitizeBody } = require("express-validator");
 const apiResponse = require("../helpers/apiResponse");
@@ -83,28 +84,64 @@ exports.productCreate = [
 	(req, res) => {
 		try {
 			const errors = validationResult(req);
-			var product = new Product(
-				{ name: req.body.name,
-					valor: req.body.valor,
-				});
 
-			if (!errors.isEmpty()) {
-				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
-			}
-			else {
-				//Save product.
-				product.save(function (err) {
-					if (err) { return apiResponse.ErrorResponse(res, err); }
-					let productData = new ProductData(product);
-					return apiResponse.successResponseWithData(res,"Product add Success.", productData);
-				});
-			}
+			Counter.findOneAndUpdate(
+				{id: "counter"}, 
+				{"$inc": {"seq":1}}, 
+				{new: true}, (err, cd) => {
+					if(cd === null) {
+						const newCounter = new Counter({id: "counter", seq: 1});
+						newCounter.save();
+					}
+				})
+
+			getSeqValue(function(err, seq){
+				var product = new Product(
+					{ 
+						name: req.body.name,
+						valor: req.body.valor,
+						code: seq
+					});
+
+				if (!errors.isEmpty()) {
+					return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
+				}
+				else {
+					//Save product.
+					product.save(function (err) {
+						if (err) { return apiResponse.ErrorResponse(res, err); }
+						let productData = new ProductData(product);
+						return apiResponse.successResponseWithData(res,"Product add Success.", productData);
+					});
+				}
+			})
+			
 		} catch (err) {
 			//throw error in json response with status 500. 
+			console.log(err);
 			return apiResponse.ErrorResponse(res, err);
 		}
 	}
 ];
+
+function getSeqValue(callback) {
+	Counter.findOne({ id: "counter" }, function(err, counter) {
+	  if (err) {
+		// Handle error
+		callback(err, null);
+		return;
+	  }
+  
+	  if (counter) {
+		// Access the 'seq' field
+		var seqValue = counter.seq;
+		callback(null, seqValue);
+	  } else {
+		// Document not found
+		callback("Document with id 'counter' not found", null);
+	  }
+	});
+  }
 
 /**
  * Product update.
