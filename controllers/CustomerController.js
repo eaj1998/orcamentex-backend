@@ -38,6 +38,36 @@ exports.customerList = [
 	}
 ];
 
+
+/**
+ * Customer List to Order.
+ * 
+ * @returns {Object}
+ */
+exports.customerListToOrder = [
+	auth,
+	function (req, res) {
+		try {
+			if(req.query.name.length < 3)
+				return apiResponse.ErrorResponse(res, 'Lenght should be greater than 3');
+			
+			Customer.find({name: {$regex: req.query.name, $options: 'i'}}, '_id name').limit(15).then((customers)=>{
+				console.log(customers);
+				if(customers.length > 0){
+					return apiResponse.successResponseWithData(res, "Operation success", customers);
+				}else{
+					return apiResponse.successResponseWithData(res, "Operation success", []);
+				}
+			});
+		} catch (err) {
+			//throw error in json response with status 500. 
+			return apiResponse.ErrorResponse(res, err);
+		}
+	}
+
+];
+
+
 /**
  * Customer Detail.
  * 
