@@ -40,6 +40,34 @@ exports.productList = [
 ];
 
 /**
+ * Product List To Order.
+ * 
+ * @returns {Object}
+ */
+exports.productListToOrder = [
+	auth,
+	function (req, res) {
+		try {
+			Product.find({
+				$or: [
+				  { name: { $regex: req.query.g, $options: "i" } },
+				  { code: req.query.g },
+				],
+			  }).limit(15).then((customers)=>{
+				if(customers.length > 0){
+					return apiResponse.successResponseWithData(res, "Operation success", customers);
+				}else{
+					return apiResponse.successResponseWithData(res, "Operation success", []);
+				}
+			});
+		} catch (err) {
+			//throw error in json response with status 500. 
+			return apiResponse.ErrorResponse(res, err);
+		}
+	}
+];
+
+/**
  * Product Detail.
  * 
  * @param {string} id
