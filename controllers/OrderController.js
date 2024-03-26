@@ -53,7 +53,7 @@ exports.orderDetail = [
 			return apiResponse.successResponseWithData(res, "Operation success", {});
 		}
 		try {
-			Order.findOne({_id: req.params.id}).then((order)=>{                
+			Order.findOne({_id: req.params.id}).populate('product customer').then((order)=>{                
 				if(order !== null){
 					let orderData = new OrderData(order);
 					return apiResponse.successResponseWithData(res, "Operation success", orderData);
@@ -83,12 +83,24 @@ exports.orderCreate = [
 	(req, res) => {
 		try {
 			const errors = validationResult(req);
-			var order = new Order(req.body);
-
 			if (!errors.isEmpty()) {
 				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
 			}
 			else {
+				var order = new Order(
+					{
+						title: req.body.title,
+						customer: req.body.customer,
+						products: req.body.products,
+					}
+				)
+
+				req.body.products.map((prod) => {
+					console.log('to passando por aqui', prod);
+					order.products.push(prod)
+				})
+
+				console.log('complete order', order);
 				//Save order.
 				order.save(function (err) {
 					if (err) { return apiResponse.ErrorResponse(res, err); }
@@ -124,16 +136,28 @@ exports.orderUpdate = [
 				if(!mongoose.Types.ObjectId.isValid(req.params.id)){
 					return apiResponse.validationErrorWithData(res, "Invalid Error.", "Invalid ID");
 				}else{
+					var order = new Order(
+						{
+							title: req.body.title,
+							customer: req.body.customer,
+							products: req.body.products,
+						}
+					)
+
+					req.body.products.map((prod) => {
+						order.products.push(prod)
+					})
+					console.log('order', order);
 					Order.findById(req.params.id, function (err, foundOrder) {
 						if(foundOrder === null){
 							return apiResponse.notFoundResponse(res,"Order not exists with this id");
-						}else{						
+						}else{		
+
                             //update order.
-                            Order.findByIdAndUpdate(req.params.id, req.body, {},function (err) {
+                            Order.findByIdAndUpdate(req.params.id, order, {},function (err) {
                                 if (err) { 
                                     return apiResponse.ErrorResponse(res, err); 
                                 }else{
-                                    let orderData = new OrderData(req.body);
                                     return apiResponse.successResponseWithData(res,"Order update Success.", Order);
                                 }
                             });							
