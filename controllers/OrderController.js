@@ -1,4 +1,4 @@
-const Order = require("../models/OrderModel");
+const { Order, ProductOrder } = require("../models/OrderModel");
 const { body,validationResult } = require("express-validator");
 const { sanitizeBody } = require("express-validator");
 const apiResponse = require("../helpers/apiResponse");
@@ -82,25 +82,32 @@ exports.orderCreate = [
 	sanitizeBody("**").escape(),
 	(req, res) => {
 		try {
+
 			const errors = validationResult(req);
 			if (!errors.isEmpty()) {
 				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
 			}
 			else {
-				var order = new Order(
-					{
-						title: req.body.title,
-						customer: req.body.customer,
-						products: req.body.products,
-					}
-				)
+				console.log(req.body);
 
-				req.body.products.map((prod) => {
-					console.log('to passando por aqui', prod);
-					order.products.push(prod)
+				var order = new Order({
+					title: req.body.title,
+					customer: req.body.customer,
+					products: []
 				})
 
-				console.log('complete order', order);
+				req.body.products.map((prod) => {
+					console.log('ta iterando');
+					var prodcutOrder = new ProductOrder({
+						productId: prod._id,
+						quantity: prod.quantity,
+						price: prod.price
+					})
+					order.products.push(prodcutOrder)
+				})				
+
+
+
 				//Save order.
 				order.save(function (err) {
 					if (err) { return apiResponse.ErrorResponse(res, err); }
@@ -147,7 +154,7 @@ exports.orderUpdate = [
 					req.body.products.map((prod) => {
 						order.products.push(prod)
 					})
-					console.log('order', order);
+					
 					Order.findById(req.params.id, function (err, foundOrder) {
 						if(foundOrder === null){
 							return apiResponse.notFoundResponse(res,"Order not exists with this id");

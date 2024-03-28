@@ -14,4 +14,7 @@ var OrderSchema = new Schema({
     products: [ProductOrderSchema]
 }, {timestamps: true});
 
-module.exports = mongoose.model("Order", OrderSchema);
+const order = mongoose.model("Order", OrderSchema);
+const productOrder = mongoose.model("ProductOrder", ProductOrderSchema);
+
+module.exports = { Order: order, ProductOrder: productOrder }
