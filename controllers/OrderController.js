@@ -53,7 +53,7 @@ exports.orderDetail = [
 			return apiResponse.successResponseWithData(res, "Operation success", {});
 		}
 		try {
-			Order.findOne({_id: req.params.id}).populate('product customer').then((order)=>{                
+			Order.findOne({_id: req.params.id}).populate('products.product customer').then((order)=>{                
 				if(order !== null){
 					let orderData = new OrderData(order);
 					return apiResponse.successResponseWithData(res, "Operation success", orderData);
@@ -82,14 +82,11 @@ exports.orderCreate = [
 	sanitizeBody("**").escape(),
 	(req, res) => {
 		try {
-
 			const errors = validationResult(req);
 			if (!errors.isEmpty()) {
 				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
 			}
 			else {
-				console.log(req.body);
-
 				var order = new Order({
 					title: req.body.title,
 					customer: req.body.customer,
@@ -97,21 +94,18 @@ exports.orderCreate = [
 				})
 
 				req.body.products.map((prod) => {
-					console.log('ta iterando');
-					var prodcutOrder = new ProductOrder({
-						productId: prod._id,
+					var productOrder = new ProductOrder({
+						product: prod.product._id,
 						quantity: prod.quantity,
 						price: prod.price
 					})
-					order.products.push(prodcutOrder)
+					order.products.push(productOrder)
 				})				
-
-
 
 				//Save order.
 				order.save(function (err) {
 					if (err) { return apiResponse.ErrorResponse(res, err); }
-					return apiResponse.successResponseWithData(res,"Order add Success. Test", order);
+					return apiResponse.successResponseWithData(res,"Order add Success.", order);
 				});
 			}
 		} catch (err) {
@@ -147,21 +141,24 @@ exports.orderUpdate = [
 						{
 							title: req.body.title,
 							customer: req.body.customer,
-							products: req.body.products,
+							products: [],
 						}
-					)
-
-					req.body.products.map((prod) => {
-						order.products.push(prod)
-					})
-					
+					)			
+					console.log(order);
+						
 					Order.findById(req.params.id, function (err, foundOrder) {
 						if(foundOrder === null){
 							return apiResponse.notFoundResponse(res,"Order not exists with this id");
 						}else{		
 
+							foundOrder.title = req.body.title;
+							foundOrder.customer = req.body.customer;
+							foundOrder.products = [];		
+							req.body.products.map((prod) => {
+								foundOrder.products.push({product: prod.product._id, quantity: prod.quantity, price: prod.price})
+							})			
                             //update order.
-                            Order.findByIdAndUpdate(req.params.id, order, {},function (err) {
+                            Order.findByIdAndUpdate(req.params.id, foundOrder, {},function (err) {
                                 if (err) { 
                                     return apiResponse.ErrorResponse(res, err); 
                                 }else{
