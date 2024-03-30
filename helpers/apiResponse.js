@@ -1,3 +1,5 @@
+const BaseException = require("../exceptions/BaseException");
+
 exports.successResponse = function (res, msg) {
 	var data = {
 		status: 1,
@@ -16,6 +18,12 @@ exports.successResponseWithData = function (res, msg, data) {
 };
 
 exports.ErrorResponse = function (res, msg) {
+	if(msg instanceof BaseException) {
+		msg = msg.message;
+	} else {
+		msg = 'An error ocurred, please contact the elpidio'
+	}
+
 	var data = {
 		status: 0,
 		message: msg,

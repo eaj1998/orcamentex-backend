@@ -121,18 +121,15 @@ exports.productUpdate = [
 			if (!errors.isEmpty()) {
 				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
 			}
-			else {
-				if(!mongoose.Types.ObjectId.isValid(req.params.id)){
+	
+			if(!mongoose.Types.ObjectId.isValid(req.params.id)){
 					return apiResponse.validationErrorWithData(res, "Invalid Error.", "Invalid ID");
-				}else{
-					const product = await productRepo.findById(req.params.id)
-					if(!product)
-						return apiResponse.notFoundResponse(res,"Product not exists with this id");
-
-					const updatedProduct = await productRepo.update(product._id, req.body)
-					apiResponse.successResponseWithData(res, "Operation success", updatedProduct)
-				}
 			}
+			const product = await productRepo.findById(req.params.id)
+			const updatedProduct = await productRepo.update(product._id, req.body)
+			apiResponse.successResponseWithData(res, "Operation success", updatedProduct)
+		
+	
 		} catch (err) {
 			//throw error in json response with status 500. 
 			return apiResponse.ErrorResponse(res, err);

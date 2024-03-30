@@ -1,6 +1,6 @@
 const Product = require("../models/ProductModel");
-const Counter = require("../models/CounterModel");
 const CounterRepository = require("../repositories/CounterRepository")
+const EntitiyNotFoundException = require("../exceptions/EntitiyNotFoundException");
 
 class ProductRepository {
     constructor() {}
@@ -24,12 +24,13 @@ class ProductRepository {
     }
 
     async findById(productId) {
-        try {
-            const product = await Product.findById(productId);
-            return product;
-        } catch (error) {
-            throw new Error(`Error finding product by ID: ${error.message}`);
-        }
+    
+        const product = await Product.findById(productId);
+        if(!product)
+            throw new EntitiyNotFoundException(`Error finding product by ID: ${error.message}`);
+
+        return product;
+        
     }
 
     async findAll() {
