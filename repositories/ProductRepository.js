@@ -11,6 +11,9 @@ class ProductRepository {
             productData.code = await counterRepo.findCounter();
             const product = new Product(productData);
 
+            if(!product)
+                throw new EntitiyNotFoundException(`Error finding product by ID: ${error.message}`);
+
             await counterRepo.findAndUpdate();
 
             // Save product.
@@ -34,16 +37,16 @@ class ProductRepository {
     }
 
     async findAll() {
-        try {
-            const products = await Product.find();
-            return products;
-        } catch (error) {
-            throw new Error(`Error finding all products: ${error.message}`);
-        }
+        
+        const products = await Product.find();
+        if(!products)
+            throw new EntitiyNotFoundException(`Error finding product by ID: ${error.message}`);
+
+        return products;        
     }
 
     async findByNameOrCode(val) {
-       return Product.find({
+       return await Product.find({
             $or: [
               { name: { $regex: val, $options: "i" } },
               { code: val },
@@ -52,24 +55,21 @@ class ProductRepository {
     }
 
     async update(productId, updates) {
-        try {
                 //update product.
-            const product = await Product.findByIdAndUpdate(productId, updates, { new: true });
-            return product;
+        const product = await Product.findByIdAndUpdate(productId, updates, { new: true });
+        if(!product)
+            throw new EntitiyNotFoundException(`Error finding product by ID: ${error.message}`);
 
-        } catch (error) {
-            throw new Error(`Error updating product: ${error.message}`);
-        }
+        return product;
+
     }
 
     async delete(productId) {
-        try {
             const result = await Product.findByIdAndDelete(productId);
-            console.log(result);
+            if(!result)
+                throw new EntitiyNotFoundException(`Error finding product by ID: ${error.message}`);
+
             return result;
-        } catch (error) {
-            throw new Error(`Error deleting product: ${error.message}`);
-        }
     }
   
 }

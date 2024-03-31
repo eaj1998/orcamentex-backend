@@ -4,17 +4,16 @@ class CounterRepository {
     constructor() {}
 
     async findCounter() {
-        try {
-            const counter = await Counter.findOne({ id: "counter" });
-            return counter.seq;
-        } catch (error) {
-            throw new Error(`Error finding counter: ${error.message}`);
-        }
+        const counter = await Counter.findOne({ id: "counter" });
+        if(!counter)
+            throw new EntitiyNotFoundException(`Error finding product by ID: ${error.message}`);
+
+        return counter.seq;
     }
 
     async findAndUpdate() {
 
-        Counter.findOneAndUpdate(
+        await Counter.findOneAndUpdate(
             { id: "counter" }, 
             { "$inc": { "seq": 1 } }, 
             { new: true }

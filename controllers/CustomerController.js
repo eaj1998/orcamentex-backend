@@ -1,19 +1,14 @@
-const Customer = require("../models/CustomerModel");
 const { body,validationResult } = require("express-validator");
 const { sanitizeBody } = require("express-validator");
 const apiResponse = require("../helpers/apiResponse");
 const auth = require("../middlewares/jwt");
 var mongoose = require("mongoose");
+const CustomerRepository = require("../repositories/CustomerRepository");
 mongoose.set("useFindAndModify", false);
+const Correios = require('node-cep-correios');
 
-// Customer Schema
-function CustomerData(data) {
-	this.id = data._id;
-	this.name= data.name;
-	this.phone = data.phone;
-	this.email = data.email;
-	this.createdAt = data.createdAt;
-}
+const customerRepo = new CustomerRepository();
+const buscaCep = new Correios();
 
 /**
  * Customer List.
@@ -22,15 +17,10 @@ function CustomerData(data) {
  */
 exports.customerList = [
 	auth,
-	function (req, res) {
+	async function (req, res) {
 		try {
-			Customer.find().then((customers)=>{
-				if(customers.length > 0){
-					return apiResponse.successResponseWithData(res, "Operation success", customers);
-				}else{
-					return apiResponse.successResponseWithData(res, "Operation success", []);
-				}
-			});
+			const customers = await customerRepo.findAll()
+			return apiResponse.successResponseWithData(res, "Operation success", customers);		
 		} catch (err) {
 			//throw error in json response with status 500. 
 			return apiResponse.ErrorResponse(res, err);
@@ -44,27 +34,23 @@ exports.customerList = [
  * 
  * @returns {Object}
  */
-exports.customerListToOrder = [
+exports.customerListSelect = [
 	auth,
-	function (req, res) {
+	async function (req, res) {
 		try {
-			if(req.query.name.length < 3)
-				return apiResponse.ErrorResponse(res, 'Lenght should be greater than 3');
-			
-			Customer.find({name: {$regex: req.query.name, $options: 'i'}}, '_id name').limit(15).then((customers)=>{
-				console.log(customers);
+			await customerRepo.findByCpfOrName(req.query.g).then((customers)=>{
 				if(customers.length > 0){
 					return apiResponse.successResponseWithData(res, "Operation success", customers);
 				}else{
 					return apiResponse.successResponseWithData(res, "Operation success", []);
 				}
-			});
+			})
+			
 		} catch (err) {
 			//throw error in json response with status 500. 
 			return apiResponse.ErrorResponse(res, err);
 		}
 	}
-
 ];
 
 
@@ -77,19 +63,13 @@ exports.customerListToOrder = [
  */
 exports.customerDetail = [
 	auth,
-	function (req, res) {
+	async function (req, res) {
 		if(!mongoose.Types.ObjectId.isValid(req.params.id)){
 			return apiResponse.successResponseWithData(res, "Operation success", {});
 		}
 		try {
-			Customer.findOne({_id: req.params.id}).then((customer)=>{                
-				if(customer !== null){
-					let customerData = new CustomerData(customer);
-					return apiResponse.successResponseWithData(res, "Operation success", customerData);
-				}else{
-					return apiResponse.successResponseWithData(res, "Operation success", {});
-				}
-			});
+			const customer = await customerRepo.findById(req.params.id)
+			return apiResponse.successResponseWithData(res, "Operation success", customer);
 		} catch (err) {
 			//throw error in json response with status 500. 
 			return apiResponse.ErrorResponse(res, err);
@@ -110,25 +90,16 @@ exports.customerCreate = [
 	auth,
 	body("name", "Name must not be empty.").isLength({ min: 1 }).trim(),
 	sanitizeBody("*").escape(),
-	(req, res) => {
+	async (req, res) => {
 		try {
 			const errors = validationResult(req);	
-			var customer = new Customer(
-				{ name: req.body.name,
-					phone: req.body.phone,
-					eamil: req.body.email,
-				});
 			if (!errors.isEmpty()) {
 				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
-			}
-			else {
-				//Save customer.
-				customer.save(function (err) {
-					if (err) { return apiResponse.ErrorResponse(res, err); }
-					let customerData = new CustomerData(req.body);
-					return apiResponse.successResponseWithData(res,"Customer add Success.", customerData);
-				});
-			}
+			}			
+			
+			const customer = await customerRepo.create(req.body);
+			apiResponse.successResponseWithData(res, "Operation success", customer)
+				
 		} catch (err) {
 			//throw error in json response with status 500. 
 			console.log(err);
@@ -150,34 +121,21 @@ exports.customerUpdate = [
 	auth,
     body("name", "Name must not be empty.").isLength({ min: 1 }).trim(),
 	sanitizeBody("*").escape(),
-	(req, res) => {
+	async (req, res) => {
 		try {
 			const errors = validationResult(req);	
 			if (!errors.isEmpty()) {
 				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
 			}
-			else {
-				if(!mongoose.Types.ObjectId.isValid(req.params.id)){
+	
+			if(!mongoose.Types.ObjectId.isValid(req.params.id)){
 					return apiResponse.validationErrorWithData(res, "Invalid Error.", "Invalid ID");
-				}else{
-					Customer.findById(req.params.id, function (err, foundCustomer) {
-                        console.log('foundCustomer', foundCustomer);
-						if(foundCustomer === null){
-							return apiResponse.notFoundResponse(res,"Customer not exists with this id");
-						}else{						
-                            //update customer.
-                            Customer.findByIdAndUpdate(req.params.id, req.body, {},function (err) {
-                                if (err) { 
-                                    return apiResponse.ErrorResponse(res, err); 
-                                }else{
-                                    let customerData = new CustomerData(req.body);
-                                    return apiResponse.successResponseWithData(res,"Customer update Success.", customerData);
-                                }
-                            });							
-						}
-					});
-				}
 			}
+			const customer = await customerRepo.findById(req.params.id)
+			const updatedCustomer = await customerRepo.update(customer._id, req.body)
+			apiResponse.successResponseWithData(res, "Operation success", updatedCustomer)
+		
+	
 		} catch (err) {
 			//throw error in json response with status 500. 
 			return apiResponse.ErrorResponse(res, err);
@@ -194,27 +152,42 @@ exports.customerUpdate = [
  */
 exports.customerDelete = [
 	auth,
-	function (req, res) {
+	async function (req, res) {
 		if(!mongoose.Types.ObjectId.isValid(req.params.id)){
 			return apiResponse.validationErrorWithData(res, "Invalid Error.", "Invalid ID");
 		}
 		try {
-			Customer.findById(req.params.id, function (err, foundCustomer) {
-				if(foundCustomer === null){
-					return apiResponse.notFoundResponse(res,"Customer not exists with this id");
-				}else{
-                    Customer.findByIdAndRemove(req.params.id,function (err) {
-                        if (err) { 
-                            return apiResponse.ErrorResponse(res, err); 
-                        }else{
-                            return apiResponse.successResponse(res,"Customer delete Success.");
-                        }
-                    });
-				}
-			});
+			const customer = await customerRepo.findById(req.params.id)
+			if(!customer)
+				return apiResponse.notFoundResponse(res,"Customer not exists with this id");
+
+			await customer.delete(customer._id)
+
+			return apiResponse.successResponse(res,"Customer delete Success.");
+			
 		} catch (err) {
 			//throw error in json response with status 500. 
 			return apiResponse.ErrorResponse(res, err);
 		}
+	}
+];
+
+
+/**
+ * Find Customer Address
+ * 
+ * @param {string}      id
+ * 
+ * @returns {Object}
+ */
+exports.customerCep = [
+	auth,
+	async function (req, res) {		
+		await buscaCep.consultaCEP({cep: req.params.cep}).then( result => {
+			return apiResponse.successResponseWithData(res, "Operation success", result)
+		}).catch(err => {
+			console.log(err);
+			return apiResponse.ErrorResponse(res, err);
+		})
 	}
 ];
