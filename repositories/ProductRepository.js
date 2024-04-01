@@ -10,7 +10,6 @@ class ProductRepository {
             const counterRepo = new CounterRepository();
             productData.code = await counterRepo.findCounter();
             const product = new Product(productData);
-
             if(!product)
                 throw new EntitiyNotFoundException(`Error finding product by ID: ${error.message}`);
 
@@ -22,7 +21,7 @@ class ProductRepository {
             return product
 
         } catch (err) {
-            throw new Error(`Error finding product by ID: ${err}`);
+            throw new EntitiyNotFoundException(`Error finding product by ID: ${err}`);
         }
     }
 

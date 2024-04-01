@@ -8,7 +8,7 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const mailer = require("../helpers/mailer");
 const { constants } = require("../helpers/constants");
-
+const fs = require('fs')
 /**
  * User registration.
  *
@@ -62,32 +62,33 @@ exports.register = [
 							confirmOTP: otp
 						}
 					);
+
+					let html = fs.readFileSync('public/confirmation.html').toString()
+					html = html.replace('{{otp}}', otp)
 					// Html email body
-					let html = "<p>Please Confirm your Account.</p><p>OTP: "+otp+"</p>";
 					// Send confirmation email
-					user.save(function (err) {
-						if (err) { return apiResponse.ErrorResponse(res, err); }
-						let userData = {
-							_id: user._id,
-							firstName: user.firstName,
-							lastName: user.lastName,
-							email: user.email,
-							otp: otp
-						};
-						return apiResponse.successResponseWithData(res,"Registration Success.", userData);
-					});
-					// mailer.send(
-					// 	constants.confirmEmails.from, 
-					// 	req.body.email,
-					// 	"Confirm Account",
-					// 	html
-					// ).then(function(){
-					// 	// Save user.
-						
-					// }).catch(err => {
-					// 	console.log(err);
-					// 	return apiResponse.ErrorResponse(res,err);
-					// }) ;
+					mailer.send(
+						constants.confirmEmails.from, 
+						req.body.email,
+						"Confirm Account",
+						html
+					).then(function(){
+						// Save user.
+						user.save(function (err) {
+							if (err) { return apiResponse.ErrorResponse(res, err); }
+							let userData = {
+								_id: user._id,
+								firstName: user.firstName,
+								lastName: user.lastName,
+								email: user.email,
+								otp: otp
+							};
+							return apiResponse.successResponseWithData(res,"Registration Success.", userData);
+						});
+					}).catch(err => {
+						console.log(err);
+						return apiResponse.ErrorResponse(res,err);
+					}) ;
 				});
 			}
 		} catch (err) {
@@ -236,7 +237,8 @@ exports.resendConfirmOtp = [
 							// Generate otp
 							let otp = utility.randomNumber(4);
 							// Html email body
-							let html = "<p>Please Confirm your Account.</p><p>OTP: "+otp+"</p>";
+							let html = fs.readFileSync('public/confirmation.html').toString()
+							html = html.replace('{{otp}}', otp)
 							// Send confirmation email
 							mailer.send(
 								constants.confirmEmails.from, 

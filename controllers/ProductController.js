@@ -91,7 +91,8 @@ exports.productCreate = [
             const errors = validationResult(req);
             if (!errors.isEmpty()) 
                 return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
-			
+			console.log(req.body);			
+
 			const product = await productRepo.create(req.body);
 			apiResponse.successResponseWithData(res, "Operation success", product)
 
@@ -121,7 +122,6 @@ exports.productUpdate = [
 			if (!errors.isEmpty()) {
 				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
 			}
-	
 			if(!mongoose.Types.ObjectId.isValid(req.params.id)){
 					return apiResponse.validationErrorWithData(res, "Invalid Error.", "Invalid ID");
 			}

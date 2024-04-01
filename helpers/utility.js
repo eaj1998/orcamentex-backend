@@ -7,3 +7,12 @@ exports.randomNumber = function (length) {
 	}
 	return Number(text);
 };
+
+exports.currencyFormatter = function (amount, lang = 'pt-BR', currency = 'BRL'){
+	console.log('amount', amount);
+	return new Intl.NumberFormat(lang, {
+		style: 'currency',
+		maximumFractionDigits: 2,
+		currency
+	} ).format(amount);
+}

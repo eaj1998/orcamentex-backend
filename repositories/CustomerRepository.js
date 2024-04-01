@@ -43,6 +43,10 @@ class CustomerRepository {
            }).limit(15)
     }
 
+    async findByCpfCnpj(val) {
+        return await Customer.find({cpfCnpj: val})
+    }
+
     async update(customerId, updates) {
                 //update customer.
         const customer = await Customer.findByIdAndUpdate(customerId, updates, { new: true });

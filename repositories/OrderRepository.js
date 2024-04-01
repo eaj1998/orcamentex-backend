@@ -1,12 +1,19 @@
-const { Order, ProductOrder } = require("../models/OrderModel");
+const { Order } = require("../models/OrderModel");
+const  CustomerRepository  = require("../repositories/CustomerRepository");
 const EntitiyNotFoundException = require("../exceptions/EntitiyNotFoundException");
+
+const customerRepo = new CustomerRepository();
 
 class OrderRepository {
     constructor() {}
 
     async create(orderData) {
         const order = new Order(orderData)
-        //Save order.
+        order.title = 'Orçamento - ' + new Date().toLocaleDateString();
+        const customer = await customerRepo.findById(order.customer)
+        if(customer)
+            order.title = 'Orçamento - ' + customer.name + ' - '+ new Date().toLocaleDateString();
+        // Save order.
         order.save();
 
         if(!order)

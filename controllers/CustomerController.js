@@ -6,6 +6,8 @@ var mongoose = require("mongoose");
 const CustomerRepository = require("../repositories/CustomerRepository");
 mongoose.set("useFindAndModify", false);
 const Correios = require('node-cep-correios');
+const cpf = require('cpf-cnpj-validator'); 
+const BaseException = require("../exceptions/BaseException");
 
 const customerRepo = new CustomerRepository();
 const buscaCep = new Correios();
@@ -89,15 +91,21 @@ exports.customerDetail = [
 exports.customerCreate = [
 	auth,
 	body("name", "Name must not be empty.").isLength({ min: 1 }).trim(),
+    body("cpfCnpj", "CPF/CNPJ Invalido.").custom((value) => { 
+		return cpf.cpf.isValid(value)
+	}),
 	sanitizeBody("*").escape(),
 	async (req, res) => {
 		try {
 			const errors = validationResult(req);	
 			if (!errors.isEmpty()) {
 				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
-			}			
-			
-			const customer = await customerRepo.create(req.body);
+			}		
+			const customer = await customerRepo.findByCpfCnpj(req.body.cpfCnpj);
+			if(customer)
+				return apiResponse.ErrorResponse(res, new BaseException("Cliente já cadastrado."));
+
+			customer = await customerRepo.create(req.body);
 			apiResponse.successResponseWithData(res, "Operation success", customer)
 				
 		} catch (err) {
@@ -186,7 +194,6 @@ exports.customerCep = [
 		await buscaCep.consultaCEP({cep: req.params.cep}).then( result => {
 			return apiResponse.successResponseWithData(res, "Operation success", result)
 		}).catch(err => {
-			console.log(err);
 			return apiResponse.ErrorResponse(res, err);
 		})
 	}

@@ -8,8 +8,10 @@ mongoose.set("useFindAndModify", false);
 const fs = require('fs')
 const pdf = require('html-pdf')
 const path = require('path');
+const util = require("../helpers/utility")
 
 const orderRepo = new OrderRepository();
+
 /**
  * Order List.
  * 
@@ -68,7 +70,13 @@ exports.orderDetail = [
  */
 exports.orderCreate = [
 	auth,
-    body("title", "Title must not be empty.").isLength({ min: 1 }).trim(),
+    body("customer", "É necessário associar o orçamento à um Cliente").isLength({ min: 1 }).trim(),
+	body("products", "É necessário adicionar produtos ao orçamento.").custom((value) => { 
+		if(value.length <= 0)
+			return false
+
+		return true
+	}),
 	sanitizeBody("**").escape(),
 	async (req, res) => {
 		try {
@@ -111,7 +119,6 @@ exports.orderUpdate = [
 			const order = await orderRepo.findById(req.params.id)
 			if(!order)
 				return apiResponse.validationErrorWithData(res, "Order doesnt exist", "Order doesnt exist");
-
 			order.title = req.body.title;
 			order.customer = req.body.customer;
 			order.products = [];	
@@ -195,20 +202,20 @@ async function updateHtml(filePath, order) {
     const html = fs.readFileSync(filePath).toString()
 	let updatedHtml = html.replace('{{CustomerName}}', order.customer.name)
 
-	const productListHTML = order.products.map(productOrder => `
+	const productListHTML = await order.products.map(productOrder => `
 	<tr>
 		<td>${productOrder.product.code}</td>
 		<td>${productOrder.product.name}</td>
 		<td>${productOrder.quantity}</td>
-		<td>${productOrder.price}</td>
-		<td>${productOrder.quantity * productOrder.price}</td>
+		<td>${util.currencyFormatter(productOrder.price)}</td>
+		<td>${util.currencyFormatter(productOrder.quantity * productOrder.price)}</td>
 	</tr>`).join('');
 
-	const totalPrice = order.products.reduce((total, product) => total + (product.price * product.quantity), 0);
+	const totalPrice = await order.products.reduce((total, product) => total + (product.price * product.quantity), 0);
 	// Add 7 days to the current date
 
 	updatedHtml = updatedHtml.replace('{{ProductList}}', productListHTML);
-	updatedHtml = updatedHtml.replace('{{Total}}', totalPrice);
+	updatedHtml = updatedHtml.replace('{{Total}}', util.currencyFormatter(totalPrice));
 	updatedHtml = updatedHtml.replace('{{DateExpiration}}', await getExpirationDate());
 
 	return updatedHtml
