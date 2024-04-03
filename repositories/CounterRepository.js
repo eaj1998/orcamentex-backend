@@ -6,7 +6,7 @@ class CounterRepository {
     async findCounter() {
         const counter = await Counter.findOne({ id: "counter" });
         if(!counter)
-            throw new EntitiyNotFoundException(`Error finding product by ID: ${error.message}`);
+            counter = this.findAndUpdate();
 
         return counter.seq;
     }

@@ -7,8 +7,10 @@ const OrderRepository = require("../repositories/Orderrepository");
 mongoose.set("useFindAndModify", false);
 const fs = require('fs')
 const pdf = require('html-pdf')
-const path = require('path');
+const mailer = require("../helpers/mailer");
 const util = require("../helpers/utility")
+const { constants } = require("../helpers/constants");
+const BaseException = require("../exceptions/BaseException");
 
 const orderRepo = new OrderRepository();
 
@@ -26,7 +28,6 @@ exports.orderList = [
 			return apiResponse.successResponseWithData(res, "Operation success", orders);		
 		} catch (err) {
 			//throw error in json response with status 500. 
-			console.log(err);
 			return apiResponse.ErrorResponse(res, err);
 		}
 	}
@@ -53,7 +54,6 @@ exports.orderDetail = [
 			// })
 			return apiResponse.successResponseWithData(res, "Operation success", order);
 		} catch (err) {
-			console.log(err);
 			//throw error in json response with status 500. 
 			return apiResponse.ErrorResponse(res, err);
 		}
@@ -197,6 +197,36 @@ exports.downloadOrder = [
 ];
 
 
+exports.emailOrder = [
+	auth,
+	async function (req, res) {
+		if(!mongoose.Types.ObjectId.isValid(req.body.id))
+			return apiResponse.validationErrorWithData(res, "Invalid Error.", "Invalid ID");
+
+		const order = await orderRepo.findById(req.body.id)
+		if(!order)
+			return apiResponse.notFoundResponse(res,"Order not exists with this id");
+
+		if(!order.customer.email)
+			return apiResponse.ErrorResponse(res, new BaseException('Cliente sem e-mail cadastrado!')); 
+		
+		const html = await updateHtml('public/template.html', order)
+
+		mailer.send(
+			constants.confirmEmails.from, 
+			order.customer.email,
+			"Orçamento - "+ order.customer.name,
+			html
+		).then(function(){
+			// Save user.
+			return apiResponse.successResponse(res,"E-mail enviado com sucesso!");
+		}).catch(err => {
+			console.log(err);
+			return apiResponse.ErrorResponse(res,err);
+		});
+	}
+];
+
 async function updateHtml(filePath, order) {
 	
     const html = fs.readFileSync(filePath).toString()
@@ -216,27 +246,7 @@ async function updateHtml(filePath, order) {
 
 	updatedHtml = updatedHtml.replace('{{ProductList}}', productListHTML);
 	updatedHtml = updatedHtml.replace('{{Total}}', util.currencyFormatter(totalPrice));
-	updatedHtml = updatedHtml.replace('{{DateExpiration}}', await getExpirationDate());
+	updatedHtml = updatedHtml.replace('{{DateExpiration}}', await util.getExpirationDate());
 
 	return updatedHtml
-}
-
-async function getExpirationDate () {
-	const currentDate = new Date();
-	// Add 7 days to the current date
-	currentDate.setDate(currentDate.getDate() + 7);
-
-	// Extract day, month, and year components
-	const day = currentDate.getDate();
-	const month = currentDate.getMonth() + 1; // Month is zero-based
-	const year = currentDate.getFullYear();
-
-	// Pad single-digit day and month with leading zeros if necessary
-	const formattedDay = day < 10 ? '0' + day : day;
-	const formattedMonth = month < 10 ? '0' + month : month;
-
-	// Format the date as "dd/mm/YYYY"
-	const formattedDate = `${formattedDay}/${formattedMonth}/${year}`;
-
-	return formattedDate
 }

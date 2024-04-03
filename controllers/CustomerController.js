@@ -101,8 +101,8 @@ exports.customerCreate = [
 			if (!errors.isEmpty()) {
 				return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
 			}		
-			const customer = await customerRepo.findByCpfCnpj(req.body.cpfCnpj);
-			if(customer)
+			let customer = await customerRepo.findByCpfCnpj(req.body.cpfCnpj);
+			if(customer.length > 0)
 				return apiResponse.ErrorResponse(res, new BaseException("Cliente já cadastrado."));
 
 			customer = await customerRepo.create(req.body);

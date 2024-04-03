@@ -91,7 +91,6 @@ exports.productCreate = [
             const errors = validationResult(req);
             if (!errors.isEmpty()) 
                 return apiResponse.validationErrorWithData(res, "Validation Error.", errors.array());
-			console.log(req.body);			
 
 			const product = await productRepo.create(req.body);
 			apiResponse.successResponseWithData(res, "Operation success", product)

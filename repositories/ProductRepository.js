@@ -8,13 +8,14 @@ class ProductRepository {
     async create(productData) {
         try {
             const counterRepo = new CounterRepository();
+
             productData.code = await counterRepo.findCounter();
+
             const product = new Product(productData);
             if(!product)
                 throw new EntitiyNotFoundException(`Error finding product by ID: ${error.message}`);
 
             await counterRepo.findAndUpdate();
-
             // Save product.
             product.save();
 
