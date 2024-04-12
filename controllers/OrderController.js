@@ -172,6 +172,7 @@ exports.downloadOrder = [
 	async function (req, res) {
 		if(!mongoose.Types.ObjectId.isValid(req.body.id))
 			return apiResponse.validationErrorWithData(res, "Invalid Error.", "Invalid ID");
+
 			try {
 				const order = await orderRepo.findById(req.body.id)
 				if(!order)
@@ -185,7 +186,10 @@ exports.downloadOrder = [
 				}
 				
 				pdf.create(html, options).toBuffer((err, buffer) => {
-					if(err) return res.status(500).json(err)
+					if(err){
+						console.log(err);
+						return res.status(500).json(err)
+					} 
 
 					res.setHeader('Content-Type', 'application/pdf');
 					res.setHeader('Content-Disposition', 'attachment; filename=example.pdf')
