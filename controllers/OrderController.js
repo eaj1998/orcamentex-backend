@@ -171,28 +171,31 @@ exports.downloadOrder = [
 	async function (req, res) {
 		if(!mongoose.Types.ObjectId.isValid(req.body.id))
 			return apiResponse.validationErrorWithData(res, "Invalid Error.", "Invalid ID");
+			try {
+				if(!order)
+					return apiResponse.notFoundResponse(res,"Order not exists with this id");
 
+				const html = await updateHtml('public/template.html', order)
+
+				const options = {
+					type: 'pdf',
+					format: 'A4',
+					orientation: 'portrait'
+				}
+				
+				pdf.create(html, options).toBuffer((err, buffer) => {
+					if(err) return res.status(500).json(err)
+
+					res.setHeader('Content-Type', 'application/pdf');
+					res.setHeader('Content-Disposition', 'attachment; filename=example.pdf')
+
+					res.end(buffer)               
+				})
+			} catch(err) {
+				console.log(err);
+			}
 		const order = await orderRepo.findById(req.body.id)
-		if(!order)
-			return apiResponse.notFoundResponse(res,"Order not exists with this id");
-
-		const html = await updateHtml('public/template.html', order)
-
-		const options = {
-			type: 'pdf',
-			format: 'A4',
-			orientation: 'portrait'
-		}
 		
-
-		pdf.create(html, options).toBuffer((err, buffer) => {
-			if(err) return res.status(500).json(err)
-
-			res.setHeader('Content-Type', 'application/pdf');
-        	res.setHeader('Content-Disposition', 'attachment; filename=example.pdf')
-
-			res.end(buffer)               
-		})
 	}
 ];
 
