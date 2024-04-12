@@ -172,6 +172,7 @@ exports.downloadOrder = [
 		if(!mongoose.Types.ObjectId.isValid(req.body.id))
 			return apiResponse.validationErrorWithData(res, "Invalid Error.", "Invalid ID");
 			try {
+				const order = await orderRepo.findById(req.body.id)
 				if(!order)
 					return apiResponse.notFoundResponse(res,"Order not exists with this id");
 
@@ -194,7 +195,6 @@ exports.downloadOrder = [
 			} catch(err) {
 				console.log(err);
 			}
-		const order = await orderRepo.findById(req.body.id)
 		
 	}
 ];
