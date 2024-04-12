@@ -11,6 +11,7 @@ const mailer = require("../helpers/mailer");
 const util = require("../helpers/utility")
 const { constants } = require("../helpers/constants");
 const BaseException = require("../exceptions/BaseException");
+const EntitiyNotFoundException = require("../exceptions/EntitiyNotFoundException");
 
 const orderRepo = new OrderRepository();
 
@@ -193,9 +194,8 @@ exports.downloadOrder = [
 					res.end(buffer)               
 				})
 			} catch(err) {
-				console.log(err);
+				return apiResponse.ErrorResponse(res, new EntitiyNotFoundException(err));
 			}
-		
 	}
 ];
 

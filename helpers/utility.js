@@ -9,7 +9,6 @@ exports.randomNumber = function (length) {
 };
 
 exports.currencyFormatter = function (amount, lang = 'pt-BR', currency = 'BRL'){
-	console.log('amount', amount);
 	return new Intl.NumberFormat(lang, {
 		style: 'currency',
 		maximumFractionDigits: 2,
