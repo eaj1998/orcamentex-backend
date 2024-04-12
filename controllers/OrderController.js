@@ -179,10 +179,16 @@ exports.downloadOrder = [
 					return apiResponse.notFoundResponse(res,"Order not exists with this id");
 
 				const html = await updateHtml('public/template.html', order)
+				console.log(html);
 				const options = {
 					type: 'pdf',
 					format: 'A4',
-					orientation: 'portrait'
+					orientation: 'portrait',
+					childProcessOptions: {
+						env: {
+							OPENSSL_CONF: '/dev/null',
+							}
+					}
 				}
 				
 				pdf.create(html, options).toBuffer((err, buffer) => {
