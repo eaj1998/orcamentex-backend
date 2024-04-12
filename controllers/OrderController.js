@@ -1,9 +1,9 @@
 const { body,validationResult } = require("express-validator");
-const { sanitizeBody } = require("express-validator");
+const { check } = require("express-validator");
 const apiResponse = require("../helpers/apiResponse");
 const auth = require("../middlewares/jwt");
 var mongoose = require("mongoose");
-const OrderRepository = require("../repositories/Orderrepository");
+const OrderRepository = require("../repositories/OrderRepository");
 mongoose.set("useFindAndModify", false);
 const fs = require('fs')
 const pdf = require('html-pdf')
@@ -77,7 +77,7 @@ exports.orderCreate = [
 
 		return true
 	}),
-	sanitizeBody("**").escape(),
+	check("**").escape(),
 	async (req, res) => {
 		try {
 			const errors = validationResult(req);
@@ -104,7 +104,7 @@ exports.orderCreate = [
  */
 exports.orderUpdate = [
 	auth,
-	sanitizeBody("**").escape(),
+	check("**").escape(),
 	async (req, res) => {
 		try {
 			const errors = validationResult(req);	

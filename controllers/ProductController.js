@@ -1,5 +1,5 @@
 const { body,validationResult } = require("express-validator");
-const { sanitizeBody } = require("express-validator");
+const { check } = require("express-validator");
 const apiResponse = require("../helpers/apiResponse");
 const auth = require("../middlewares/jwt");
 const ProductRepository = require("../repositories/ProductRepository");
@@ -85,7 +85,7 @@ exports.productCreate = [
     auth,
     body("name", "Name must not be empty.").isLength({ min: 1 }).trim(),
     body("price", "Valor must not be empty.").isLength({ min: 1 }).trim(),
-    sanitizeBody("*").escape(),
+    check("*").escape(),
     async (req, res) => {
         try {
             const errors = validationResult(req);
@@ -114,7 +114,7 @@ exports.productCreate = [
 exports.productUpdate = [
 	auth,
     body("name", "Name must not be empty.").isLength({ min: 1 }).trim(),
-	sanitizeBody("*").escape(),
+	check("*").escape(),
 	async (req, res) => {
 		try {
 			const errors = validationResult(req);	

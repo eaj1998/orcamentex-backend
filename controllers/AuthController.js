@@ -1,6 +1,6 @@
 const UserModel = require("../models/UserModel");
 const { body,validationResult } = require("express-validator");
-const { sanitizeBody } = require("express-validator");
+const { check } = require("express-validator");
 //helper file to prepare responses.
 const apiResponse = require("../helpers/apiResponse");
 const utility = require("../helpers/utility");
@@ -35,10 +35,10 @@ exports.register = [
 		}),
 	body("password").isLength({ min: 6 }).trim().withMessage("Password must be 6 characters or greater."),
 	// Sanitize fields.
-	sanitizeBody("firstName").escape(),
-	sanitizeBody("lastName").escape(),
-	sanitizeBody("email").escape(),
-	sanitizeBody("password").escape(),
+	check("firstName").escape(),
+	check("lastName").escape(),
+	check("email").escape(),
+	check("password").escape(),
 	// Process request after validation and sanitization.
 	(req, res) => {
 		try {
@@ -109,8 +109,8 @@ exports.login = [
 	body("email").isLength({ min: 1 }).trim().withMessage("Email must be specified.")
 		.isEmail().withMessage("Email must be a valid email address."),
 	body("password").isLength({ min: 1 }).trim().withMessage("Password must be specified."),
-	sanitizeBody("email").escape(),
-	sanitizeBody("password").escape(),
+	check("email").escape(),
+	check("password").escape(),
 	(req, res) => {
 		try {
 			const errors = validationResult(req);
@@ -173,8 +173,8 @@ exports.verifyConfirm = [
 	body("email").isLength({ min: 1 }).trim().withMessage("Email must be specified.")
 		.isEmail().withMessage("Email must be a valid email address."),
 	body("otp").isLength({ min: 1 }).trim().withMessage("OTP must be specified."),
-	sanitizeBody("email").escape(),
-	sanitizeBody("otp").escape(),
+	check("email").escape(),
+	check("otp").escape(),
 	(req, res) => {
 		try {
 			const errors = validationResult(req);
@@ -222,7 +222,7 @@ exports.verifyConfirm = [
 exports.resendConfirmOtp = [
 	body("email").isLength({ min: 1 }).trim().withMessage("Email must be specified.")
 		.isEmail().withMessage("Email must be a valid email address."),
-	sanitizeBody("email").escape(),
+	check("email").escape(),
 	(req, res) => {
 		try {
 			const errors = validationResult(req);

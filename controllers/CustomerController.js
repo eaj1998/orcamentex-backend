@@ -1,5 +1,5 @@
 const { body,validationResult } = require("express-validator");
-const { sanitizeBody } = require("express-validator");
+const { check } = require("express-validator");
 const apiResponse = require("../helpers/apiResponse");
 const auth = require("../middlewares/jwt");
 var mongoose = require("mongoose");
@@ -94,7 +94,7 @@ exports.customerCreate = [
     body("cpfCnpj", "CPF/CNPJ Invalido.").custom((value) => { 
 		return cpf.cpf.isValid(value)
 	}),
-	sanitizeBody("*").escape(),
+	check("*").escape(),
 	async (req, res) => {
 		try {
 			const errors = validationResult(req);	
@@ -128,7 +128,7 @@ exports.customerCreate = [
 exports.customerUpdate = [
 	auth,
     body("name", "Name must not be empty.").isLength({ min: 1 }).trim(),
-	sanitizeBody("*").escape(),
+	check("*").escape(),
 	async (req, res) => {
 		try {
 			const errors = validationResult(req);	
