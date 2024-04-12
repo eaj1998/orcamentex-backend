@@ -187,12 +187,12 @@ exports.downloadOrder = [
 				
 				pdf.create(html, options).toBuffer((err, buffer) => {
 					if(err){
-						console.log(err);
+						console.log('Erro montar PDF', err);
 						return res.status(500).json(err)
 					} 
 
 					res.setHeader('Content-Type', 'application/pdf');
-					res.setHeader('Content-Disposition', 'attachment; filename=example.pdf')
+					// res.setHeader('Content-Disposition', 'attachment; filename=example.pdf')
 
 					res.end(buffer)               
 				})
