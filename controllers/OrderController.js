@@ -179,7 +179,6 @@ exports.downloadOrder = [
 					return apiResponse.notFoundResponse(res,"Order not exists with this id");
 
 				const html = await updateHtml('public/template.html', order)
-				console.log(html);
 				const options = {
 					type: 'pdf',
 					format: 'A4',
@@ -193,7 +192,6 @@ exports.downloadOrder = [
 				
 				pdf.create(html, options).toBuffer((err, buffer) => {
 					if(err){
-						console.log('Erro montar PDF', err);
 						return res.status(500).json(err)
 					} 
 
