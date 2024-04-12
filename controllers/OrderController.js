@@ -178,7 +178,6 @@ exports.downloadOrder = [
 					return apiResponse.notFoundResponse(res,"Order not exists with this id");
 
 				const html = await updateHtml('public/template.html', order)
-				return apiResponse.successResponse(res, 'HTML GERADO');
 				const options = {
 					type: 'pdf',
 					format: 'A4',
