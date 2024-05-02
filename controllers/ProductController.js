@@ -50,6 +50,31 @@ exports.productListSelect = [
 	}
 ];
 
+
+/**
+ * Product by code
+ * 
+ * @returns {Object}
+ */
+exports.productByCode = [
+	auth,
+	async function (req, res) {
+		try {
+			await productRepo.findByCode(req.query.g).then((products)=>{
+				if(products.length > 0){
+					return apiResponse.successResponseWithData(res, "Operation success", products);
+				}else{
+					return apiResponse.successResponseWithData(res, "Operation success", []);
+				}
+			})
+			
+		} catch (err) {
+			//throw error in json response with status 500. 
+			return apiResponse.ErrorResponse(res, err);
+		}
+	}
+];
+
 /**
  * Product Detail.
  * 

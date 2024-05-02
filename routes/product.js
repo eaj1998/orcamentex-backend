@@ -4,6 +4,7 @@ const ProductController = require("../controllers/ProductController");
 var router = express.Router();
 
 router.get("/order", ProductController.productListSelect);
+router.get("/code", ProductController.productByCode);
 router.get("/", ProductController.productList);
 router.get("/:id", ProductController.productDetail);
 router.post("/", ProductController.productCreate);

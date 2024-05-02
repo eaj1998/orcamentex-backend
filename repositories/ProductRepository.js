@@ -54,6 +54,10 @@ class ProductRepository {
           }).limit(15)
     }
 
+    async findByCode(val) {
+        return await Product.find({ code: val }).limit(15)
+     }
+
     async update(productId, updates) {
                 //update product.
         const product = await Product.findByIdAndUpdate(productId, updates, { new: true });
