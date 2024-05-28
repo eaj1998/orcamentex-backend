@@ -43,6 +43,7 @@
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
+            page-break-inside: auto; /* Evitar quebra dentro da tabela */
         }
         .invoice-table th, .invoice-table td {
             border: 1px solid #ddd;
@@ -51,6 +52,12 @@
         }
         .invoice-table th {
             background-color: #f2f2f2;
+        }
+        .invoice-table tr {
+            page-break-inside: avoid; /* Evitar quebra dentro de linhas */
+        }
+        .invoice-table tr:last-child {
+            page-break-after: auto; /* Permitir quebra após a última linha */
         }
         .invoice-total {
             margin-top: 20px;
@@ -61,6 +68,14 @@
         }
         .payment-details {
             font-size: 10px;
+        }
+        @media print {
+            .container {
+                page-break-after: always; /* Garantir quebra de página após o container */
+            }
+            .invoice-table {
+                page-break-before: always; /* Garantir quebra de página antes da tabela */
+            }
         }
     </style>
 </head>
