@@ -16,34 +16,45 @@
             max-width: 800px;
             margin: 20px auto;
             padding: 20px;
-            padding-top: 100px; /* Espaço adicional no topo para acomodar a logo */
             background-color: #fff;
             border-radius: 10px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
             color: #333;
             position: relative;
         }
+        .row::after {
+            content: "";
+            clear: both;
+            display: table;
+        }
+        .col-md-4, .col-md-8 {
+            float: left;
+        }
+        .col-md-4 {
+            width: 33.333333%;
+        }
+        .col-md-8 {
+            width: 66.666666%;
+        }
         .invoice-header {
-            text-align: center;
-            margin-bottom: 20px;
-            position: relative; /* Adicionado para contexto de posicionamento */
+            text-align: left;
+            margin-top: 57px;
         }
         .invoice-header h1 {
             color: #960404;
+            margin-top: 0;
         }
         .invoice-logo {
-            position: absolute;
-            top: 20px;
-            left: 20px;
+            text-align: left;
+            margin-bottom: 20px;
         }
         .invoice-logo img {
-            max-width: 150px; /* Tamanho aumentado da logo */
+            max-width: 150px;
         }
         .invoice-table {
-            width: 100%;
             border-collapse: collapse;
+            width: 100%;
             margin-bottom: 20px;
-            page-break-inside: auto; /* Evitar quebra dentro da tabela */
         }
         .invoice-table th, .invoice-table td {
             border: 1px solid #ddd;
@@ -53,59 +64,47 @@
         .invoice-table th {
             background-color: #f2f2f2;
         }
-        .invoice-table tr {
-            page-break-inside: avoid; /* Evitar quebra dentro de linhas */
-        }
-        .invoice-table tr:last-child {
-            page-break-after: auto; /* Permitir quebra após a última linha */
-        }
         .invoice-total {
-            margin-top: 20px;
             text-align: right;
         }
         .bill-to {
             text-align: right;
         }
-        .payment-details {
-            font-size: 10px;
-        }
-        @media print {
-            .container {
-                page-break-after: always; /* Garantir quebra de página após o container */
-            }
-            .invoice-table {
-                page-break-before: always; /* Garantir quebra de página antes da tabela */
-            }
-        }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="invoice-logo">
-            <img src="https://orcamentex-backend.onrender.com/logo.png" alt="Logo"/> 
+        <div class="row">
+            <div class="col-md-4 invoice-logo">
+                <img src="https://orcamentex-backend.onrender.com/logo.png" alt="Logo"/> 
+            </div>
+            <div class="col-md-8 invoice-header">
+                <h1>Orçamento</h1>
+            </div>
+            <div class="bill-to">
+                <h3>Cliente: {{CustomerName}}</h3>
+                <!-- Insert customer details here -->
+            </div>
+        </div>        
+       <div class="row">
+        <div class="col-md-12">
+            <table class="invoice-table">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Produto</th>
+                        <th>Qtd</th>
+                        <th>Preço</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{ProductList}}				
+                    <!-- Insert invoice items dynamically here -->
+                </tbody>
+            </table>
         </div>
-        <div class="invoice-header">
-            <h1>Orçamento</h1>
-        </div>
-        <div class="bill-to">
-            <h3>Cliente: {{CustomerName}}</h3>
-            <!-- Insert customer details here -->
-        </div>
-        <table class="invoice-table">
-            <thead>
-                <tr>
-                    <th>Código</th>
-                    <th>Produto</th>
-                    <th>Qtd</th>
-                    <th>Preço</th>
-                    <th>Total</th>
-                </tr>
-            </thead>
-            <tbody>
-				{{ProductList}}				
-                <!-- Insert invoice items dynamically here -->
-            </tbody>
-        </table>
+       </div>
         <div class="invoice-total">            
             <p><strong>Total:</strong> {{Total}} </p>
         </div>
