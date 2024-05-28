@@ -186,3 +186,53 @@ exports.productDelete = [
 		}
 	}
 ];
+
+async function updateHtmlTabelaPrecos(filePath, products) {
+	
+    const html = fs.readFileSync(filePath).toString()
+	let updatedHtml = html;
+
+	const productListHTML = await products.map(product => `
+	<tr>
+		<td>${product.product.code}</td>
+		<td>${product.product.name}</td>
+		<td>${util.currencyFormatter(product.price)}</td>
+	</tr>`).join('');
+
+	updatedHtml = updatedHtml.replace('{{ProductList}}', productListHTML);
+
+	return updatedHtml
+}
+
+exports.downloadTabelaDePrecos = [
+	auth,
+	async function (req, res) {
+			try {
+				const products = await productRepo.findAll()
+				const html = await updateHtmlTabelaPrecos('public/template_precos.html', products)
+				const options = {
+					type: 'pdf',
+					format: 'A4',
+					orientation: 'portrait',
+					childProcessOptions: {
+						env: {
+							OPENSSL_CONF: '/dev/null',
+							}
+					}
+				}
+				
+				pdf.create(html, options).toBuffer((err, buffer) => {
+					if(err){
+						return res.status(500).json(err)
+					} 
+
+					res.setHeader('Content-Type', 'application/pdf');
+					// res.setHeader('Content-Disposition', 'attachment; filename=example.pdf')
+
+					res.end(buffer)               
+				})
+			} catch(err) {
+				return apiResponse.ErrorResponse(res, new EntitiyNotFoundException(err));
+			}
+	}
+];

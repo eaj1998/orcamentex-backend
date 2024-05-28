@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tabela de Preços</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            font-size: 12px;
+            /* background-color: #f2f2f2; */
+        }
+        .container {
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            color: #333;
+            position: relative;
+        }
+        .invoice-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .invoice-header h1 {
+            color: #960404;
+        }
+        .invoice-logo {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+        }
+        .invoice-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        .invoice-table th, .invoice-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        .invoice-table th {
+            background-color: #f2f2f2;
+        }
+        .invoice-total {
+            margin-top: 20px;
+            text-align: right;
+        }
+		.bill-to {
+			text-align: right;
+		}
+		.payment-details {
+			font-size: 10px
+		}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="invoice-logo">
+            
+        </div>
+        <div class="invoice-header">
+            <h1>Tabela de Preços</h1>
+        </div>       
+        <table class="invoice-table">
+            <thead>
+                <tr>
+                    <th>Código</th>
+                    <th>Produto</th>                    
+                    <th>Preço</th>                    
+                </tr>
+            </thead>
+            <tbody>
+				{{ProductList}}				
+                <!-- Insert invoice items dynamically here -->
+            </tbody>
+        </table>            
+    </div>
+</body>
+</html>
