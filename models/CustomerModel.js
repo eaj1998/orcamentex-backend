@@ -6,7 +6,7 @@ var CustomerSchema = new Schema({
 	name: {type: String, required: true},
 	phone: {type: String, required: false},
 	email: {type: String, required: false},
-	cpfCnpj: {type: String, required: true},
+	cpfCnpj: {type: String, required: false},
 	cep: { type: String },
 	street: { type: String },
 	district: {type: String},
