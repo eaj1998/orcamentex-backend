@@ -5,7 +5,10 @@ const auth = require("../middlewares/jwt");
 const ProductRepository = require("../repositories/ProductRepository");
 var mongoose = require("mongoose");
 mongoose.set("useFindAndModify", false);
-
+const fs = require('fs')
+const pdf = require('html-pdf')
+const util = require("../helpers/utility")
+const EntitiyNotFoundException = require("../exceptions/EntitiyNotFoundException");
 const productRepo = new ProductRepository();
 
 /**
@@ -187,23 +190,6 @@ exports.productDelete = [
 	}
 ];
 
-async function updateHtmlTabelaPrecos(filePath, products) {
-	
-    const html = fs.readFileSync(filePath).toString()
-	let updatedHtml = html;
-
-	const productListHTML = await products.map(product => `
-	<tr>
-		<td>${product.product.code}</td>
-		<td>${product.product.name}</td>
-		<td>${util.currencyFormatter(product.price)}</td>
-	</tr>`).join('');
-
-	updatedHtml = updatedHtml.replace('{{ProductList}}', productListHTML);
-
-	return updatedHtml
-}
-
 exports.downloadTabelaDePrecos = [
 	auth,
 	async function (req, res) {
@@ -236,3 +222,20 @@ exports.downloadTabelaDePrecos = [
 			}
 	}
 ];
+
+async function updateHtmlTabelaPrecos(filePath, products) {
+	
+    const html = fs.readFileSync(filePath).toString()
+	let updatedHtml = html;
+
+	const productListHTML = await products.map(product => `
+	<tr>
+		<td>${product.code}</td>
+		<td>${product.name}</td>
+		<td>${util.currencyFormatter(product.price)}</td>
+	</tr>`).join('');
+
+	updatedHtml = updatedHtml.replace('{{ProductList}}', productListHTML);
+
+	return updatedHtml
+}
