@@ -91,12 +91,12 @@ exports.customerDetail = [
 exports.customerCreate = [
 	auth,
 	body("name", "Name must not be empty.").isLength({ min: 1 }).trim(),
-    body("cpfCnpj", "CPF/CNPJ Invalido.").custom((value) => { 
-		if(value.length > 11)
-			return cpf.cnpj.isValid(value)
+    // body("cpfCnpj", "CPF/CNPJ Invalido.").custom((value) => { 
+	// 	if(value.length > 11)
+	// 		return cpf.cnpj.isValid(value)
 		
-		return cpf.cpf.isValid(value)
-	}),
+	// 	return cpf.cpf.isValid(value)
+	// }),
 	check("*").escape(),
 	async (req, res) => {
 		try {
