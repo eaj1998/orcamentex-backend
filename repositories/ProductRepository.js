@@ -55,7 +55,7 @@ class ProductRepository {
     }
 
     async findByCode(val) {
-        return await Product.find({ code: val }).limit(15)
+        return await Product.find({ code: val })
      }
 
     async update(productId, updates) {
