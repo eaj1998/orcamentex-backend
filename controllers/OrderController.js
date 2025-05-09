@@ -148,6 +148,7 @@ exports.orderUpdate = [
         );
       order.title = req.body.title;
       order.customer = req.body.customer;
+      order.expirationDate = req.body.expirationDate;
       order.products = [];
       req.body.products.map((prod) => {
         order.products.push({
@@ -321,7 +322,7 @@ async function updateHtml(filePath, order) {
   );
   updatedHtml = updatedHtml.replace(
     "{{DateExpiration}}",
-    await util.getExpirationDate()
+    `${order.expirationDate.getDate()}/${order.expirationDate.getMonth()}/${order.expirationDate.getYear()}`
   );
 
   return updatedHtml;
