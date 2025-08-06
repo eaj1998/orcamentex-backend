@@ -102,18 +102,24 @@ exports.orderUpdate = [
                 return apiResponse.validationErrorWithData(res, "Invalid Error.", "Invalid ID");
             }
 
-            const order = await orderRepo.findById(req.params.id);
-            if (!order) {
-                return apiResponse.validationErrorWithData(res, "Order doesnt exist", "Order doesnt exist");
-            }
-
-            order.title = req.body.title;
-            order.customer = req.body.customer;
-            order.products = req.body.products.map(prod => ({
-                product: prod.product._id,
-                quantity: prod.quantity,
-                price: prod.price,
-            }));
+      const order = await orderRepo.findById(req.params.id);
+      if (!order)
+        return apiResponse.validationErrorWithData(
+          res,
+          "Order doesnt exist",
+          "Order doesnt exist"
+        );
+      order.title = req.body.title;
+      order.customer = req.body.customer;
+      order.expirationDate = req.body.expirationDate;
+      order.products = [];
+      req.body.products.map((prod) => {
+        order.products.push({
+          product: prod.product._id,
+          quantity: prod.quantity,
+          price: prod.price,
+        });
+      });
 
             const updatedOrder = await orderRepo.update(order._id, order);
             return apiResponse.successResponseWithData(res, "Operation success", updatedOrder);
@@ -263,9 +269,15 @@ async function updateHtml(filePath, order) {
         0
     );
 
-    updatedHtml = updatedHtml.replace("{{ProductList}}", productListHTML);
-    updatedHtml = updatedHtml.replace("{{Total}}", util.currencyFormatter(totalPrice));
-    updatedHtml = updatedHtml.replace("{{DateExpiration}}", order.expirationDate);
+  updatedHtml = updatedHtml.replace("{{ProductList}}", productListHTML);
+  updatedHtml = updatedHtml.replace(
+    "{{Total}}",
+    util.currencyFormatter(totalPrice)
+  );
+  updatedHtml = updatedHtml.replace(
+    "{{DateExpiration}}",
+    `${order.expirationDate.getDate()}/${order.expirationDate.getMonth()}/${order.expirationDate.getYear()}`
+  );
 
     return updatedHtml;
 }
