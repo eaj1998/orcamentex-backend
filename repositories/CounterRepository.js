@@ -4,25 +4,27 @@ class CounterRepository {
     constructor() {}
 
     async findCounter() {
-        const counter = await Counter.findOne({ id: "counter" });
+        let counter = await Counter.findOne({ id: "counter" });
         if(!counter)
-            counter = this.findAndUpdate();
+            counter = await this.findAndUpdate();
 
         return counter.seq;
     }
 
     async findAndUpdate() {
-
-        await Counter.findOneAndUpdate(
+        let counter = await Counter.findOneAndUpdate(
             { id: "counter" }, 
             { "$inc": { "seq": 1 } }, 
             { new: true }
-        ).exec(async (err, cd) => {
-            if (cd === null) {
-                const newCounter = new Counter({ id: "counter", seq: 1 });
-                await newCounter.save();
-            }
-        });
+        );
+
+        if (!counter) {
+            const newCounter = new Counter({ id: "counter", seq: 1 });
+            await newCounter.save();
+            return newCounter;
+        }
+
+        return counter;
     }
 }
 

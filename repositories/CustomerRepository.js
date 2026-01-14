@@ -1,56 +1,56 @@
-const  Customer  = require("../models/CustomerModel");
+const Customer = require("../models/CustomerModel");
 const CounterRepository = require("../repositories/CounterRepository")
 const EntitiyNotFoundException = require("../exceptions/EntitiyNotFoundException");
 
 class CustomerRepository {
-    constructor() {}
+    constructor() { }
 
     async create(customerData) {
         const customer = new Customer(customerData);
         // Save customer.
-        customer.save();
+        await customer.save();
 
-        if(!customer)
+        if (!customer)
             throw new EntitiyNotFoundException(`Error finding customer by ID: ${error.message}`);
 
         return customer
     }
 
     async findById(customerId) {
-    
+
         const customer = await Customer.findById(customerId);
-        if(!customer)
+        if (!customer)
             throw new EntitiyNotFoundException(`Error finding customer by ID: ${error.message}`);
 
         return customer;
-        
+
     }
 
     async findAll() {
-        
+
         const customers = await Customer.find();
-        if(!customers)
+        if (!customers)
             throw new EntitiyNotFoundException(`Error finding customer by ID: ${error.message}`);
 
-        return customers;        
+        return customers;
     }
-    
+
     async findByCpfOrName(val) {
         return await Customer.find({
-             $or: [
-               { name: { $regex: val, $options: "i" } },
-             ],
-           }).limit(15)
+            $or: [
+                { name: { $regex: val, $options: "i" } },
+            ],
+        }).limit(15)
     }
 
     async findByCpfCnpj(val) {
-        return await Customer.find({cpfCnpj: val})
+        return await Customer.find({ cpfCnpj: val })
     }
 
     async update(customerId, updates) {
-                //update customer.
+        //update customer.
         const customer = await Customer.findByIdAndUpdate(customerId, updates, { new: true });
-        if(!customer)
+        if (!customer)
             throw new EntitiyNotFoundException(`Error finding customer by ID: ${error.message}`);
 
         return customer;
@@ -58,13 +58,13 @@ class CustomerRepository {
     }
 
     async delete(customerId) {
-            const result = await Customer.findByIdAndDelete(customerId);
-            if(!result)
-                throw new EntitiyNotFoundException(`Error finding customer by ID: ${error.message}`);
+        const result = await Customer.findByIdAndDelete(customerId);
+        if (!result)
+            throw new EntitiyNotFoundException(`Error finding customer by ID: ${error.message}`);
 
-            return result;
+        return result;
     }
-  
+
 }
 
 module.exports = CustomerRepository;

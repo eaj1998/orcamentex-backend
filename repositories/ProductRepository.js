@@ -3,7 +3,7 @@ const CounterRepository = require("../repositories/CounterRepository")
 const EntitiyNotFoundException = require("../exceptions/EntitiyNotFoundException");
 
 class ProductRepository {
-    constructor() {}
+    constructor() { }
 
     async create(productData) {
         try {
@@ -12,12 +12,12 @@ class ProductRepository {
             productData.code = await counterRepo.findCounter();
 
             const product = new Product(productData);
-            if(!product)
+            if (!product)
                 throw new EntitiyNotFoundException(`Error finding product by ID: ${error.message}`);
 
             await counterRepo.findAndUpdate();
             // Save product.
-            product.save();
+            await product.save();
 
             return product
 
@@ -27,41 +27,41 @@ class ProductRepository {
     }
 
     async findById(productId) {
-    
+
         const product = await Product.findById(productId);
-        if(!product)
+        if (!product)
             throw new EntitiyNotFoundException(`Error finding product by ID: ${error.message}`);
 
         return product;
-        
+
     }
 
     async findAll() {
-        
+
         const products = await Product.find();
-        if(!products)
+        if (!products)
             throw new EntitiyNotFoundException(`Error finding product by ID: ${error.message}`);
 
-        return products;        
+        return products;
     }
 
     async findByNameOrCode(val) {
-       return await Product.find({
+        return await Product.find({
             $or: [
-              { name: { $regex: val, $options: "i" } },
-              { code: val },
+                { name: { $regex: val, $options: "i" } },
+                { code: val },
             ],
-          }).limit(15)
+        }).limit(15)
     }
 
     async findByCode(val) {
         return await Product.find({ code: val })
-     }
+    }
 
     async update(productId, updates) {
-                //update product.
+        //update product.
         const product = await Product.findByIdAndUpdate(productId, updates, { new: true });
-        if(!product)
+        if (!product)
             throw new EntitiyNotFoundException(`Error finding product by ID: ${error.message}`);
 
         return product;
@@ -69,13 +69,13 @@ class ProductRepository {
     }
 
     async delete(productId) {
-            const result = await Product.findByIdAndDelete(productId);
-            if(!result)
-                throw new EntitiyNotFoundException(`Error finding product by ID: ${error.message}`);
+        const result = await Product.findByIdAndDelete(productId);
+        if (!result)
+            throw new EntitiyNotFoundException(`Error finding product by ID: ${error.message}`);
 
-            return result;
+        return result;
     }
-  
+
 }
 
 module.exports = ProductRepository;
